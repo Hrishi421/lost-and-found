@@ -1,0 +1,10 @@
+{
+  "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/frontend/home-public.html",
+      "permanent": false
+    }
+  ]
+}
