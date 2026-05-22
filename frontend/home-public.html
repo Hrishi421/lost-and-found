@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Campus Lost & Found — Browse</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        .hero-pills {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .hero-pill {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            padding: 5px 14px;
+            font-size: .8rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="toast-container"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="home-public.html">
+                <div class="brand-icon">🔍</div>
+                <span>Campus <em>Lost&amp;Found</em></span>
+            </a>
+            <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="home-public.html" class="active"><i class="fa fa-home"></i> Home</a></li>
+                <li id="liLogin"><a href="login.html"><i class="fa fa-sign-in-alt"></i> Login</a></li>
+                <li id="liReg"><a href="register.html"><i class="fa fa-user-plus"></i> Register</a></li>
+                <li id="liPortal" class="hidden"><a href="#" id="portalLink"><i class="fa fa-th-large"></i> My
+                        Portal</a></li>
+                <li id="liLogout" class="hidden"><a href="#" onclick="logout()"><i class="fa fa-sign-out-alt"></i>
+                        Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-pills">
+                <span class="hero-pill">🎓 Campus Community</span>
+                <span class="hero-pill">🔒 Moderated</span>
+                <span class="hero-pill">⚡ Real-time</span>
+            </div>
+            <h1 class="hero-title">
+                Find What's <span class="gradient-text">Lost.</span><br />
+                Return What's <span class="gradient-text">Found.</span>
+            </h1>
+            <p class="hero-sub">Our campus platform connects students who've lost items with those who've found them.
+                Browse all listings below or sign up to post your own.</p>
+
+            <!-- Live Stats -->
+            <div class="stats-grid" style="max-width:600px;margin:0 auto 32px;" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-number" id="statAll">0</div>
+                    <div class="stat-label">Total Items</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statLost">0</div>
+                    <div class="stat-label">Lost</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statFound">0</div>
+                    <div class="stat-label">Found</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statResolved">0</div>
+                    <div class="stat-label">Reunited 🎉</div>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <i class="fa fa-search" style="color:var(--text-muted)"></i>
+                <input type="text" id="searchInput" placeholder="Search by name, location, category…"
+                    oninput="onSearch(this.value)" />
+                <button class="btn btn-primary btn-sm" onclick="onSearch(document.getElementById('searchInput').value)">
+                    <i class="fa fa-search"></i> Search
+                </button>
+            </div>
+
+            <!-- CTA -->
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                <a href="login.html" class="btn btn-primary btn-lg" id="ctaBtn"><i class="fa fa-plus-circle"></i> Post
+                    an Item</a>
+                <a href="register.html" class="btn btn-secondary btn-lg"><i class="fa fa-user-plus"></i> Join Campus</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ITEMS SECTION -->
+    <section class="section">
+        <div class="container">
+            <div
+                style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+                <div>
+                    <h2 class="section-title">Browse All Items</h2>
+                    <p class="section-subtitle" id="resultCount">Loading…</p>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filter-tabs" id="filterTabs">
+                <button class="filter-tab active" data-filter="all">🗂 All</button>
+                <button class="filter-tab" data-filter="lost">🔴 Lost</button>
+                <button class="filter-tab" data-filter="found">🟢 Found</button>
+                <button class="filter-tab" data-cat="Electronics">💻 Electronics</button>
+                <button class="filter-tab" data-cat="Wallets">👛 Wallets</button>
+                <button class="filter-tab" data-cat="Personal Items">🎒 Personal</button>
+                <button class="filter-tab" data-cat="Books">📚 Books</button>
+                <button class="filter-tab" data-cat="Keys">🔑 Keys</button>
+            </div>
+
+            <div class="items-grid" id="grid">
+                <div class="loader" style="grid-column:1/-1;"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DETAIL MODAL -->
+    <div class="modal-overlay" id="detailModal" style="display:none;">
+        <div class="modal" style="max-width:580px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="mTitle"></h2>
+                <button class="modal-close" onclick="closeModal('detailModal')"><i class="fa fa-times"></i></button>
+            </div>
+            <div id="mBody"></div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer
+        style="padding:36px 0;border-top:1px solid var(--glass-border);text-align:center;color:var(--text-muted);font-size:.85rem;position:relative;z-index:1;">
+        <div class="container">
+            <p>🔍 Campus Lost &amp; Found &nbsp;•&nbsp; Made with ❤️ for students</p>
+            <p style="margin-top:8px;">
+                <a href="login.html" style="color:var(--primary-light);text-decoration:none;">Login</a> &nbsp;·&nbsp;
+                <a href="register.html" style="color:var(--primary-light);text-decoration:none;">Register</a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+    <script>
+        let allItems = [], activeFilter = 'all', activecat = '';
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initHamburger();
+            // Nav state
+            const sess = getSession();
+            if (sess) {
+                document.getElementById('liLogin').classList.add('hidden');
+                document.getElementById('liReg').classList.add('hidden');
+                document.getElementById('liLogout').classList.remove('hidden');
+                document.getElementById('liPortal').classList.remove('hidden');
+                const pl = document.getElementById('portalLink');
+                pl.href = sess.role === 'admin' ? 'home-admin.html' : 'home-student.html';
+                pl.innerHTML = `<i class="fa fa-th-large"></i> ${sess.role === 'admin' ? 'Admin Panel' : 'My Portal'}`;
+                document.getElementById('ctaBtn').href = sess.role === 'admin' ? 'home-admin.html' : 'home-student.html';
+                document.getElementById('ctaBtn').innerHTML = '<i class="fa fa-plus-circle"></i> Post an Item';
+            }
+            loadAll();
+
+            // Filter tab clicks
+            document.getElementById('filterTabs').addEventListener('click', e => {
+                const btn = e.target.closest('.filter-tab');
+                if (!btn) return;
+                document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeFilter = btn.dataset.filter || 'all';
+                activecat = btn.dataset.cat || '';
+                render();
+            });
+        });
+
+        function loadAll() {
+            // Compute stats from all items
+            const all = getItems();
+            const approved = all.filter(i => i.status === 'approved');
+            document.getElementById('statAll').textContent = approved.length;
+            document.getElementById('statLost').textContent = approved.filter(i => i.type === 'lost').length;
+            document.getElementById('statFound').textContent = approved.filter(i => i.type === 'found').length;
+            document.getElementById('statResolved').textContent = all.filter(i => i.status === 'resolved').length;
+            allItems = approved;
+            render();
+        }
+
+        function render() {
+            const q = document.getElementById('searchInput').value.toLowerCase().trim();
+            let items = allItems;
+            if (activeFilter === 'lost') items = items.filter(i => i.type === 'lost');
+            if (activeFilter === 'found') items = items.filter(i => i.type === 'found');
+            if (activecat) items = items.filter(i => i.category === activecat);
+            if (q) items = items.filter(i =>
+                i.title.toLowerCase().includes(q) ||
+                i.description.toLowerCase().includes(q) ||
+                i.location.toLowerCase().includes(q) ||
+                (i.category || '').toLowerCase().includes(q)
+            );
+            document.getElementById('resultCount').textContent = items.length + (items.length === 1 ? ' item' : ' items') + ' found';
+            const grid = document.getElementById('grid');
+            if (!items.length) {
+                grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+        <div class="empty-icon">🔍</div><h3>No items found</h3><p>Try a different search or filter</p></div>`;
+                return;
+            }
+            grid.innerHTML = items.map(item =>
+                buildItemCard(item, [{ cls: 'btn-secondary', label: '<i class="fa fa-eye"></i> Details', fn: `viewDetail(${item.id})` }])
+            ).join('');
+        }
+
+        const onSearch = debounce(render, 320);
+
+        function viewDetail(id) {
+            const item = allItems.find(i => i.id === id); if (!item) return;
+            document.getElementById('mTitle').textContent = item.title;
+            const img = item.image_url
+                ? `<img src="${item.image_url}" style="width:100%;border-radius:12px;margin-bottom:16px;"/>`
+                : `<div style="height:160px;background:linear-gradient(135deg,rgba(108,92,231,.18),rgba(0,206,201,.1));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:3.5rem;margin-bottom:16px;">${item.type === 'lost' ? '🔍' : '📦'}</div>`;
+            document.getElementById('mBody').innerHTML = `${img}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">${renderBadge(item.type)} ${renderBadge(item.status)}</div>
+      <p style="color:var(--text-secondary);line-height:1.7;margin-bottom:16px;">${escHtml(item.description)}</p>
+      <div style="display:grid;gap:8px;">
+        ${row('📍', 'Location', escHtml(item.location))}
+        ${row('🗂', 'Category', escHtml(item.category || 'General'))}
+        ${row('📅', 'Date', formatDate(item.date_reported))}
+        ${item.poster_name ? row('👤', 'Posted By', escHtml(item.poster_name)) : ''}
+      </div>`;
+            openModal('detailModal');
+        }
+
+        function row(ico, label, val) {
+            return `<div style="display:flex;gap:10px;padding:10px;background:var(--glass);border-radius:10px;">
+      <span>${ico}</span><div>
+        <div style="font-size:.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:600;">${label}</div>
+        <div>${val}</div></div></div>`;
+        }
+
+        document.getElementById('detailModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('detailModal'); });
+    </script>
+</body>
+
+</html>

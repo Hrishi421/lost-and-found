@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Portal — Campus Lost & Found</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        .tab-nav {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid var(--glass-border);
+            margin-bottom: 28px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 12px 22px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-secondary);
+            font-family: 'Inter', sans-serif;
+            font-size: .9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .25s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-light);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .grid2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media(max-width:620px) {
+            .grid2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .user-banner {
+            background: linear-gradient(135deg, rgba(108, 92, 231, .18), rgba(0, 206, 201, .08));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .u-avatar {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            flex-shrink: 0;
+            color: #fff;
+        }
+
+        .img-preview {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            margin-top: 8px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="toast-container"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="home-public.html">
+                <div class="brand-icon">🔍</div>
+                <span>Campus <em>Lost&amp;Found</em></span>
+            </a>
+            <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="home-public.html"><i class="fa fa-globe"></i> Browse All</a></li>
+                <li><a href="home-student.html" class="active"><i class="fa fa-user-graduate"></i> My Portal</a></li>
+                <li><a href="#" onclick="logout()"><i class="fa fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="section">
+        <div class="container">
+
+            <!-- User Banner -->
+            <div class="user-banner">
+                <div class="u-avatar" id="uAvatar">?</div>
+                <div>
+                    <h2 style="font-size:1.2rem;font-weight:700;" id="uName">—</h2>
+                    <p style="color:var(--text-secondary);font-size:.88rem;" id="uEmail">—</p>
+                </div>
+                <div style="margin-left:auto;display:flex;gap:10px;flex-wrap:wrap;">
+                    <div class="stat-card" style="padding:10px 18px;text-align:center;">
+                        <div class="stat-number" id="myTotal" style="font-size:1.5rem;">0</div>
+                        <div class="stat-label" style="font-size:.72rem;">My Posts</div>
+                    </div>
+                    <div class="stat-card" style="padding:10px 18px;text-align:center;">
+                        <div class="stat-number" id="myPending" style="font-size:1.5rem;">0</div>
+                        <div class="stat-label" style="font-size:.72rem;">Pending</div>
+                    </div>
+                    <div class="stat-card" style="padding:10px 18px;text-align:center;">
+                        <div class="stat-number" id="myResolved" style="font-size:1.5rem;">0</div>
+                        <div class="stat-label" style="font-size:.72rem;">Resolved</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABS -->
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="switchTab('browse',this)"><i class="fa fa-search"></i> Browse
+                    Items</button>
+                <button class="tab-btn" onclick="switchTab('post',this)"><i class="fa fa-plus-circle"></i> Post
+                    Item</button>
+                <button class="tab-btn" onclick="switchTab('mine',this)"><i class="fa fa-list-ul"></i> My Posts</button>
+                <button class="tab-btn" onclick="switchTab('messages',this)"><i class="fa fa-comment-dots"></i> Messages</button>
+            </div>
+
+            <!-- ── TAB: BROWSE ── -->
+            <div class="tab-content active" id="tab-browse">
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center;">
+                    <div class="search-bar" style="margin:0;flex:1;min-width:220px;">
+                        <i class="fa fa-search" style="color:var(--text-muted)"></i>
+                        <input type="text" id="browseSearch" placeholder="Search items…" oninput="applyBrowse()" />
+                    </div>
+                    <select class="form-control" id="browseType" onchange="applyBrowse()"
+                        style="width:auto;border-radius:50px;padding:10px 14px;">
+                        <option value="">All Types</option>
+                        <option value="lost">Lost</option>
+                        <option value="found">Found</option>
+                    </select>
+                    <select class="form-control" id="browseCat" onchange="applyBrowse()"
+                        style="width:auto;border-radius:50px;padding:10px 14px;">
+                        <option value="">All Categories</option>
+                        <option>Electronics</option>
+                        <option>Wallets</option>
+                        <option>Personal Items</option>
+                        <option>Books</option>
+                        <option>Keys</option>
+                        <option>Clothing</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div class="items-grid" id="browseGrid"></div>
+            </div>
+
+            <!-- ── TAB: POST ── -->
+            <div class="tab-content" id="tab-post">
+                <div style="max-width:680px;">
+                    <h2 class="section-title">Post a Lost or Found Item</h2>
+                    <p class="section-subtitle">Submitted posts appear publicly after admin approval.</p>
+                    <div id="postAlert"></div>
+                    <form id="postForm">
+                        <div class="grid2">
+                            <div class="form-group">
+                                <label class="form-label">Item Type *</label>
+                                <select name="type" class="form-control" required>
+                                    <option value="">Select type…</option>
+                                    <option value="lost">🔴 I Lost This Item</option>
+                                    <option value="found">🟢 I Found This Item</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Category</label>
+                                <select name="category" class="form-control">
+                                    <option value="Other">Other</option>
+                                    <option value="Electronics">💻 Electronics</option>
+                                    <option value="Wallets">👛 Wallets</option>
+                                    <option value="Personal Items">🎒 Personal Items</option>
+                                    <option value="Books">📚 Books</option>
+                                    <option value="Keys">🔑 Keys</option>
+                                    <option value="Clothing">👔 Clothing</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Item Title *</label>
+                            <input name="title" class="form-control" placeholder="e.g. Blue Hydro Flask Water Bottle"
+                                required maxlength="200" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description *</label>
+                            <textarea name="description" class="form-control" rows="4"
+                                placeholder="Describe the item in detail — colour, brand, unique features…"
+                                required></textarea>
+                        </div>
+                        <div class="grid2">
+                            <div class="form-group">
+                                <label class="form-label">Location *</label>
+                                <div class="input-icon">
+                                    <i class="fa fa-map-marker-alt icon"></i>
+                                    <input name="location" class="form-control" placeholder="e.g. Library – 2nd Floor"
+                                        required />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Date *</label>
+                                <input name="date_reported" type="date" class="form-control" id="dateField" required />
+                            </div>
+                        </div>
+                        <!-- Contact Email removed naturally, replaced by Chat -->
+                        <div class="form-group">
+                            <label class="form-label">Upload Image (optional)</label>
+                            <input type="file" id="imgInput" accept="image/*" class="form-control"
+                                style="cursor:pointer;" onchange="previewImg(this)" />
+                            <img id="imgPreview" class="img-preview" alt="Preview" />
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg" id="postBtn">
+                            <i class="fa fa-paper-plane"></i> Submit for Review
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ── TAB: MY POSTS ── -->
+            <div class="tab-content" id="tab-mine">
+                <h2 class="section-title">My Posts</h2>
+                <p class="section-subtitle">Manage your reported items. Pending items are awaiting admin approval.</p>
+                <div class="items-grid" id="mineGrid"></div>
+            </div>
+
+            <!-- ── TAB: MESSAGES ── -->
+            <div class="tab-content" id="tab-messages">
+                <h2 class="section-title">Messages</h2>
+                <p class="section-subtitle">Your active conversations about lost and found items.</p>
+                <div class="chat-thread-list" id="messagesList"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- DETAIL MODAL -->
+    <div class="modal-overlay" id="detailModal" style="display:none;">
+        <div class="modal" style="max-width:580px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="mTitle"></h2>
+                <button class="modal-close" onclick="closeModal('detailModal')"><i class="fa fa-times"></i></button>
+            </div>
+            <div id="mBody"></div>
+        </div>
+    </div>
+
+    <!-- CHAT MODAL -->
+    <div class="modal-overlay" id="chatModal" style="display:none;">
+        <div class="modal" style="max-width:500px; padding:24px;">
+            <div class="modal-header" style="margin-bottom:12px;">
+                <h2 class="modal-title" id="chatTitle">Chat</h2>
+                <button class="modal-close" onclick="closeModal('chatModal')"><i class="fa fa-times"></i></button>
+            </div>
+            <div class="chat-modal-body">
+                <div class="chat-messages" id="chatHistory"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="chatInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendChatMessage()"/>
+                    <button onclick="sendChatMessage()"><i class="fa fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        let sess, allItems = [], myItemsList = [];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            sess = requireLogin();
+            if (!sess) return;
+            if (sess.role === 'admin') { window.location.href = 'home-admin.html'; return; }
+
+            document.getElementById('uAvatar').textContent = sess.full_name[0].toUpperCase();
+            document.getElementById('uName').textContent = sess.full_name;
+            document.getElementById('uEmail').textContent = sess.email;
+            document.getElementById('dateField').value = new Date().toISOString().split('T')[0];
+
+            initHamburger();
+            loadBrowse();
+            loadMine();
+            loadMessages();
+        });
+
+        // ── BROWSE ──
+        function loadBrowse() {
+            allItems = getApprovedItems();
+            applyBrowse();
+        }
+
+        function applyBrowse() {
+            const q = document.getElementById('browseSearch').value.toLowerCase();
+            const typ = document.getElementById('browseType').value;
+            const cat = document.getElementById('browseCat').value;
+            let items = allItems;
+            if (typ) items = items.filter(i => i.type === typ);
+            if (cat) items = items.filter(i => i.category === cat);
+            if (q) items = items.filter(i =>
+                i.title.toLowerCase().includes(q) ||
+                i.description.toLowerCase().includes(q) ||
+                i.location.toLowerCase().includes(q)
+            );
+            const grid = document.getElementById('browseGrid');
+            if (!items.length) {
+                grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🔍</div><h3>No items found</h3></div>`;
+                return;
+            }
+            grid.innerHTML = items.map(item =>
+                buildItemCard(item, [{ cls: 'btn-secondary', label: '<i class="fa fa-eye"></i> Details', fn: `viewDetail(${item.id})` }])
+            ).join('');
+        }
+
+        // ── POST ──
+        function previewImg(input) {
+            const prev = document.getElementById('imgPreview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => { prev.src = e.target.result; prev.style.display = 'block'; };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        document.getElementById('postForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const fd = new FormData(this);
+            const data = Object.fromEntries(fd.entries());
+            if (!data.type || !data.title || !data.description || !data.location) {
+                showAlert('postAlert', '⚠️ Please fill in all required fields', 'error'); return;
+            }
+            const btn = document.getElementById('postBtn');
+            setLoading(btn, true);
+
+            // Handle image as base64 if selected
+            const imgFile = document.getElementById('imgInput').files[0];
+            const doPost = (imgUrl) => {
+                data.image_url = imgUrl || null;
+                postItem(sess.id, sess.full_name, data);
+                showAlert('postAlert', '🎉 Item submitted! Awaiting admin approval.', 'success');
+                showToast('Post submitted for review', 'success');
+                this.reset();
+                document.getElementById('dateField').value = new Date().toISOString().split('T')[0];
+                document.getElementById('imgPreview').style.display = 'none';
+                setLoading(btn, false);
+                loadMine();
+                setTimeout(() => switchTab('mine', document.querySelectorAll('.tab-btn')[2]), 600);
+            };
+
+            if (imgFile) {
+                const reader = new FileReader();
+                reader.onload = e => doPost(e.target.result);
+                reader.readAsDataURL(imgFile);
+            } else { doPost(null); }
+        });
+
+        // ── MY POSTS ──
+        function loadMine() {
+            myItemsList = getMyItems(sess.id);
+            document.getElementById('myTotal').textContent = myItemsList.length;
+            document.getElementById('myPending').textContent = myItemsList.filter(i => i.status === 'pending').length;
+            document.getElementById('myResolved').textContent = myItemsList.filter(i => i.status === 'resolved').length;
+
+            const grid = document.getElementById('mineGrid');
+            if (!myItemsList.length) {
+                grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📝</div><h3>No posts yet</h3><p>Use the <strong>Post Item</strong> tab to report a lost or found item</p></div>`;
+                return;
+            }
+            grid.innerHTML = myItemsList.map(item => {
+                const actions = [];
+                if (item.status === 'approved') actions.push({ cls: 'btn-success', label: '<i class="fa fa-check"></i> Resolved', fn: `markResolved(${item.id})` });
+                actions.push({ cls: 'btn-danger', label: '<i class="fa fa-trash"></i> Delete', fn: `removeItem(${item.id})` });
+                actions.push({ cls: 'btn-secondary', label: '<i class="fa fa-eye"></i> View', fn: `viewMine(${item.id})` });
+                return buildItemCard(item, actions);
+            }).join('');
+        }
+
+        function markResolved(id) {
+            if (!confirm('Mark this item as resolved/reunited?')) return;
+            updateItemStatus(id, 'resolved');
+            showToast('Marked as resolved! 🎉', 'success');
+            loadMine(); loadBrowse();
+        }
+
+        function removeItem(id) {
+            if (!confirm('Delete this item? This cannot be undone.')) return;
+            deleteItemById(id, sess.id, 'student');
+            showToast('Item deleted', 'info');
+            loadMine(); loadBrowse();
+        }
+
+        // ── DETAIL MODAL ──
+        function viewDetail(id) { showItemModal(allItems.find(i => i.id === id)); }
+        function viewMine(id) { showItemModal(myItemsList.find(i => i.id === id)); }
+
+        function showItemModal(item) {
+            if (!item) return;
+            document.getElementById('mTitle').textContent = item.title;
+            const img = item.image_url
+                ? `<img src="${item.image_url}" style="width:100%;border-radius:12px;margin-bottom:14px;"/>`
+                : `<div style="height:150px;background:linear-gradient(135deg,rgba(108,92,231,.18),rgba(0,206,201,.1));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:3rem;margin-bottom:14px;">${item.type === 'lost' ? '🔍' : '📦'}</div>`;
+            
+            let messageBtnHtml = '';
+            if (item.user_id !== sess.id && item.status === 'approved') {
+                messageBtnHtml = `<button onclick="openChatWithPoster(${item.id}, ${item.user_id}, '${escHtml(item.title)}')" class="btn btn-primary" style="margin-top:10px; width:100%; justify-content:center;"><i class="fa fa-comment-dots"></i> Message Poster</button>`;
+            }
+                
+            document.getElementById('mBody').innerHTML = `${img}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">${renderBadge(item.type)} ${renderBadge(item.status)}</div>
+      <p style="color:var(--text-secondary);line-height:1.7;margin-bottom:14px;">${escHtml(item.description)}</p>
+      <div style="display:grid;gap:8px;">
+        ${drow('📍', 'Location', escHtml(item.location))}
+        ${drow('🗂', 'Category', escHtml(item.category || 'General'))}
+        ${drow('📅', 'Date', formatDate(item.date_reported))}
+        ${item.poster_name ? drow('👤', 'Posted By', escHtml(item.poster_name)) : ''}
+      </div>
+      ${messageBtnHtml}`;
+            openModal('detailModal');
+        }
+
+        function drow(ico, lbl, val) {
+            return `<div style="display:flex;gap:10px;padding:10px;background:var(--glass);border-radius:10px;">
+      <span>${ico}</span><div><div style="font-size:.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:600;">${lbl}</div><div>${val}</div></div></div>`;
+        }
+
+        // ── MESSAGES ──
+        let activeChat = null; // { itemId, otherUserId, title }
+
+        function loadMessages() {
+            const threads = getMyChatThreads(sess.id);
+            const container = document.getElementById('messagesList');
+            if (!threads.length) {
+                container.innerHTML = `<div class="empty-state"><div class="empty-icon">💬</div><h3>No messages yet</h3><p>Start a conversation by viewing an item and messaging the poster.</p></div>`;
+                return;
+            }
+            
+            let html = '';
+            threads.forEach(t => {
+                const item = getItems().find(i => i.id === t.item_id);
+                if(!item) return;
+                const otherUser = getUsers().find(u => u.id === t.other_user_id);
+                const otherName = otherUser ? otherUser.full_name : 'Unknown User';
+                const avatar = otherName[0].toUpperCase();
+                
+                html += `
+                <div class="chat-thread" onclick="openChatWithPoster(${t.item_id}, ${t.other_user_id}, '${escHtml(item.title)}')">
+                    <div class="chat-thread-avatar">${avatar}</div>
+                    <div class="chat-thread-content">
+                        <div class="chat-thread-header">
+                            <span class="chat-thread-name">${escHtml(otherName)} <span style="font-weight:normal;font-size:0.8rem;color:var(--text-muted)">(${escHtml(item.title)})</span></span>
+                            <span class="chat-thread-time">${timeAgo(t.latest_message.created_at)}</span>
+                        </div>
+                        <div class="chat-thread-preview">${t.latest_message.sender_id === sess.id ? 'You: ' : ''}${escHtml(t.latest_message.text)}</div>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function openChatWithPoster(itemId, otherUserId, itemTitle) {
+            closeModal('detailModal');
+            activeChat = { itemId, otherUserId, title: itemTitle };
+            document.getElementById('chatTitle').textContent = `Chat: ${itemTitle}`;
+            document.getElementById('chatInput').value = '';
+            renderChatHistory();
+            openModal('chatModal');
+        }
+
+        function renderChatHistory() {
+            if (!activeChat) return;
+            const msgs = getChatHistory(activeChat.itemId, sess.id, activeChat.otherUserId);
+            const historyDiv = document.getElementById('chatHistory');
+            
+            if (!msgs.length) {
+                historyDiv.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.85rem;">No messages yet. Say hello!</div>`;
+            } else {
+                historyDiv.innerHTML = msgs.map(m => {
+                    const isMine = m.sender_id === sess.id;
+                    const dateStr = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    return `
+                    <div class="chat-bubble ${isMine ? 'mine' : 'theirs'}">
+                        ${escHtml(m.text)}
+                        <span class="chat-bubble-time">${dateStr}</span>
+                    </div>`;
+                }).join('');
+                
+                // Scroll to bottom
+                historyDiv.scrollTop = historyDiv.scrollHeight;
+            }
+        }
+
+        function sendChatMessage() {
+            if (!activeChat) return;
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+            
+            sendMessage(activeChat.itemId, sess.id, activeChat.otherUserId, text);
+            input.value = '';
+            renderChatHistory();
+            loadMessages(); // update thread list if tab is open
+        }
+
+        function switchTab(name, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tab-' + name).classList.add('active');
+        }
+
+        document.getElementById('detailModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('detailModal'); });
+        document.getElementById('chatModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('chatModal'); });
+    </script>
+</body>
+
+</html>

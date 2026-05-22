@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — Campus Lost & Found</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+
+<body>
+  <div id="toast-container"></div>
+
+  <div class="auth-page">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="logo-icon">🔍</div>
+        <h1>Welcome Back</h1>
+        <p>Sign in to Campus Lost &amp; Found</p>
+      </div>
+
+      <div id="alertBox"></div>
+
+      <form id="loginForm" novalidate autocomplete="off">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <div class="input-icon">
+            <i class="fa fa-envelope icon"></i>
+            <input type="email" id="email" class="form-control" placeholder="you@campus.edu" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="input-icon">
+            <i class="fa fa-lock icon"></i>
+            <input type="password" id="password" class="form-control" placeholder="••••••••" required />
+            <button type="button" onclick="togglePw()"
+              style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;">
+              <i class="fa fa-eye" id="pwIcon"></i>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="loginBtn">
+          <i class="fa fa-sign-in-alt"></i> Sign In
+        </button>
+      </form>
+
+      <div class="divider"><span>Quick Demo Login</span></div>
+
+      <div style="display:grid;gap:10px;">
+        <button class="btn btn-secondary btn-full" onclick="demo('john@campus.edu','student123')">
+          <i class="fa fa-user-graduate"></i> Student Demo
+        </button>
+        <button class="btn btn-secondary btn-full" onclick="demo('admin@campus.edu','admin123')">
+          <i class="fa fa-shield-alt"></i> Admin Demo
+        </button>
+      </div>
+
+      <div class="auth-footer" style="margin-top:20px;">
+        No account? <a href="register.html">Create one free</a>
+      </div>
+      <div class="auth-footer" style="margin-top:8px;">
+        <a href="home-public.html"><i class="fa fa-globe"></i> Browse as Guest</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // Redirect if already logged in
+    const s = getSession();
+    if (s) window.location.href = s.role === 'admin' ? 'home-admin.html' : 'home-student.html';
+
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      const email = document.getElementById('email').value.trim();
+      const pw = document.getElementById('password').value;
+      if (!email || !pw) { showAlert('alertBox', '⚠️ Please fill in all fields', 'error'); return; }
+      setLoading(btn, true);
+      setTimeout(() => {
+        const result = authLogin(email, pw);
+        if (result.success) {
+          showToast('Welcome back, ' + result.name + '!', 'success');
+          setTimeout(() => window.location.href = result.role === 'admin' ? 'home-admin.html' : 'home-student.html', 600);
+        } else {
+          showAlert('alertBox', '❌ ' + result.message, 'error');
+          setLoading(btn, false);
+        }
+      }, 400);
+    });
+
+    function demo(e, p) {
+      document.getElementById('email').value = e;
+      document.getElementById('password').value = p;
+      document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+    }
+
+    function togglePw() {
+      const inp = document.getElementById('password');
+      const icon = document.getElementById('pwIcon');
+      if (inp.type === 'password') { inp.type = 'text'; icon.className = 'fa fa-eye-slash'; }
+      else { inp.type = 'password'; icon.className = 'fa fa-eye'; }
+    }
+  </script>
+</body>
+
+</html>

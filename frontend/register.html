@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register — Campus Lost & Found</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        .pw-bar {
+            height: 4px;
+            border-radius: 2px;
+            background: var(--glass-border);
+            margin-top: 6px;
+        }
+
+        .pw-bar .bar {
+            height: 100%;
+            border-radius: 2px;
+            transition: width .35s, background .3s;
+            width: 0;
+        }
+
+        .pw-hint {
+            font-size: .75rem;
+            margin-top: 5px;
+            color: var(--text-muted);
+        }
+
+        .check-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .check-item {
+            font-size: .76rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+        }
+
+        .check-item.ok {
+            color: var(--success);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="toast-container"></div>
+
+    <div class="auth-page">
+        <div class="auth-card" style="max-width:460px;">
+            <div class="auth-logo">
+                <div class="logo-icon">🎓</div>
+                <h1>Create Account</h1>
+                <p>Join the Campus Lost &amp; Found community</p>
+            </div>
+
+            <div id="alertBox"></div>
+
+            <form id="regForm" novalidate>
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <div class="input-icon">
+                        <i class="fa fa-user icon"></i>
+                        <input type="text" id="full_name" class="form-control" placeholder="Your full name" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Campus Email</label>
+                    <div class="input-icon">
+                        <i class="fa fa-envelope icon"></i>
+                        <input type="email" id="email" class="form-control" placeholder="you@campus.edu" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <div class="input-icon">
+                        <i class="fa fa-lock icon"></i>
+                        <input type="password" id="password" class="form-control" placeholder="Min 6 characters"
+                            required oninput="checkStrength(this.value)" />
+                        <button type="button" onclick="togglePw('password','eye1')"
+                            style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;">
+                            <i class="fa fa-eye" id="eye1"></i>
+                        </button>
+                    </div>
+                    <div class="pw-bar">
+                        <div class="bar" id="strengthBar"></div>
+                    </div>
+                    <div class="pw-hint" id="strengthText"></div>
+                    <div class="check-row">
+                        <span class="check-item" id="c1"><i class="fa fa-circle" style="font-size:.6rem"></i> 6+
+                            chars</span>
+                        <span class="check-item" id="c2"><i class="fa fa-circle" style="font-size:.6rem"></i>
+                            Number</span>
+                        <span class="check-item" id="c3"><i class="fa fa-circle" style="font-size:.6rem"></i>
+                            Uppercase</span>
+                        <span class="check-item" id="c4"><i class="fa fa-circle" style="font-size:.6rem"></i> Special
+                            char</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <div class="input-icon">
+                        <i class="fa fa-check-circle icon"></i>
+                        <input type="password" id="confirm_pw" class="form-control" placeholder="Re-enter password"
+                            required />
+                        <button type="button" onclick="togglePw('confirm_pw','eye2')"
+                            style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;">
+                            <i class="fa fa-eye" id="eye2"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group" style="display:flex;gap:10px;align-items:flex-start;">
+                    <input type="checkbox" id="agree" style="margin-top:3px;accent-color:var(--primary);" />
+                    <label for="agree" style="font-size:.85rem;color:var(--text-secondary);cursor:pointer;">
+                        I agree to the <a href="#" style="color:var(--primary-light);">Terms of Service</a>
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full btn-lg" id="regBtn">
+                    <i class="fa fa-user-plus"></i> Create Account
+                </button>
+            </form>
+
+            <div class="auth-footer" style="margin-top:20px;">
+                Already have an account? <a href="login.html">Sign in</a>
+            </div>
+            <div class="auth-footer" style="margin-top:8px;">
+                <a href="home-public.html"><i class="fa fa-globe"></i> Browse as Guest</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        const sess = getSession();
+        if (sess) window.location.href = sess.role === 'admin' ? 'home-admin.html' : 'home-student.html';
+
+        function checkStrength(val) {
+            const checks = [
+                { id: 'c1', re: /.{6,}/ },
+                { id: 'c2', re: /\d/ },
+                { id: 'c3', re: /[A-Z]/ },
+                { id: 'c4', re: /[^A-Za-z0-9]/ }
+            ];
+            let score = 0;
+            checks.forEach(c => {
+                const el = document.getElementById(c.id);
+                if (c.re.test(val)) { score++; el.classList.add('ok'); el.querySelector('i').className = 'fa fa-check-circle'; }
+                else { el.classList.remove('ok'); el.querySelector('i').className = 'fa fa-circle'; el.querySelector('i').style.fontSize = '.6rem'; }
+            });
+            const w = ['0%', '28%', '55%', '78%', '100%'], bg = ['', '#e17055', '#fdcb6e', '#00b894', '#6c5ce7'], lbl = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+            const bar = document.getElementById('strengthBar');
+            bar.style.width = w[score]; bar.style.background = bg[score];
+            const txt = document.getElementById('strengthText');
+            txt.textContent = score ? lbl[score] : ''; txt.style.color = bg[score];
+        }
+
+        function togglePw(id, iconId) {
+            const inp = document.getElementById(id), icon = document.getElementById(iconId);
+            if (inp.type === 'password') { inp.type = 'text'; icon.className = 'fa fa-eye-slash'; }
+            else { inp.type = 'password'; icon.className = 'fa fa-eye'; }
+        }
+
+        document.getElementById('regForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const name = document.getElementById('full_name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const pw = document.getElementById('password').value;
+            const cpw = document.getElementById('confirm_pw').value;
+
+            if (!name || !email || !pw) { showAlert('alertBox', '⚠️ All fields are required', 'error'); return; }
+            if (!email.includes('@')) { showAlert('alertBox', '⚠️ Invalid email address', 'error'); return; }
+            if (pw.length < 6) { showAlert('alertBox', '⚠️ Password must be at least 6 characters', 'error'); return; }
+            if (pw !== cpw) { showAlert('alertBox', '❌ Passwords do not match', 'error'); return; }
+            if (!document.getElementById('agree').checked) { showAlert('alertBox', '⚠️ Please agree to the terms', 'error'); return; }
+
+            const btn = document.getElementById('regBtn');
+            setLoading(btn, true);
+            setTimeout(() => {
+                const result = authRegister(name, email, pw);
+                if (result.success) {
+                    showToast('🎉 Welcome ' + result.name + '!', 'success');
+                    setTimeout(() => window.location.href = 'home-student.html', 600);
+                } else {
+                    showAlert('alertBox', '❌ ' + result.message, 'error');
+                    setLoading(btn, false);
+                }
+            }, 400);
+        });
+    </script>
+</body>
+
+</html>

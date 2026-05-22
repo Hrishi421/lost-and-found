@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Panel — Campus Lost & Found</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        /* ── ADMIN LAYOUT ── */
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .admin-wrap {
+            display: flex;
+            flex: 1;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: var(--dark-2);
+            border-right: 1px solid var(--glass-border);
+            padding: 24px 12px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo {
+            padding: 0 8px 20px;
+            border-bottom: 1px solid var(--glass-border);
+            margin-bottom: 14px;
+        }
+
+        .sidebar-logo h2 {
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
+        .sidebar-logo p {
+            font-size: .75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .s-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-size: .88rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            transition: all .22s;
+            text-align: left;
+            margin-bottom: 2px;
+        }
+
+        .s-link:hover,
+        .s-link.active {
+            background: rgba(108, 92, 231, .18);
+            color: var(--primary-light);
+        }
+
+        .s-badge {
+            margin-left: auto;
+            background: var(--danger);
+            color: #fff;
+            font-size: .68rem;
+            padding: 2px 7px;
+            border-radius: 50px;
+            font-weight: 700;
+        }
+
+        .s-sep {
+            font-size: .7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 14px 12px 6px;
+            font-weight: 600;
+        }
+
+        .admin-main {
+            flex: 1;
+            padding: 32px;
+            overflow-x: hidden;
+        }
+
+        @media(max-width:768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .admin-main {
+                padding: 20px 16px;
+            }
+        }
+
+        /* ── TABS ── */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ── PENDING CARD ── */
+        .pcard {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 14px;
+            display: grid;
+            gap: 12px;
+            transition: box-shadow .25s;
+        }
+
+        .pcard:hover {
+            box-shadow: 0 12px 30px rgba(108, 92, 231, .2);
+        }
+
+        .pcard-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .pcard-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        .pcard-meta {
+            font-size: .82rem;
+            color: var(--text-muted);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .pcard-desc {
+            color: var(--text-secondary);
+            font-size: .88rem;
+            line-height: 1.6;
+        }
+
+        .pcard-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* ── USERS TABLE CARD ── */
+        .user-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--glass-border);
+            background: var(--glass);
+            margin-bottom: 8px;
+        }
+
+        .u-av {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #fff;
+            font-size: .95rem;
+            flex-shrink: 0;
+        }
+
+        .u-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .u-name {
+            font-weight: 600;
+            font-size: .95rem;
+        }
+
+        .u-mail {
+            font-size: .8rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ── APPROVED TABLE ── */
+        .a-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--glass-border);
+            background: var(--glass);
+            margin-bottom: 8px;
+        }
+
+        .a-title {
+            font-weight: 600;
+            font-size: .93rem;
+        }
+
+        .a-meta {
+            font-size: .78rem;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        .a-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="toast-container"></div>
+
+    <!-- TOP NAV (mobile) -->
+    <nav class="navbar" style="position:sticky;top:0;z-index:100;">
+        <div class="container">
+            <a class="navbar-brand" href="home-public.html">
+                <div class="brand-icon">🛡</div>
+                <span>Admin <em>Panel</em></span>
+            </a>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span id="navAdminName" style="font-size:.88rem;color:var(--text-secondary);"></span>
+                <button class="btn btn-danger btn-sm" onclick="logout()"><i class="fa fa-sign-out-alt"></i>
+                    Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="admin-wrap">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <h2>🛡 Admin Panel</h2>
+                <p id="adminNameSide">—</p>
+            </div>
+
+            <div class="s-sep">Moderation</div>
+            <button class="s-link active" onclick="showTab('pending',this)">
+                <i class="fa fa-clock"></i> Pending Review
+                <span class="s-badge" id="pendingBadge">0</span>
+            </button>
+            <button class="s-link" onclick="showTab('approved',this)">
+                <i class="fa fa-check-circle"></i> Approved Items
+            </button>
+
+            <div class="s-sep">Manage</div>
+            <button class="s-link" onclick="showTab('users',this)">
+                <i class="fa fa-users"></i> All Users
+            </button>
+            <button class="s-link" onclick="showTab('stats',this)">
+                <i class="fa fa-chart-bar"></i> Statistics
+            </button>
+
+            <div class="s-sep">Links</div>
+            <a class="s-link" href="home-public.html"><i class="fa fa-globe"></i> Public Page</a>
+            <button class="s-link" onclick="logout()" style="color:var(--danger);"><i class="fa fa-sign-out-alt"></i>
+                Logout</button>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="admin-main">
+
+            <!-- ── PENDING ── -->
+            <div class="tab-content active" id="tab-pending">
+                <h2 class="section-title">Pending Review</h2>
+                <p class="section-subtitle" id="pendingCount">Loading…</p>
+                <div id="pendingList"></div>
+            </div>
+
+            <!-- ── APPROVED ── -->
+            <div class="tab-content" id="tab-approved">
+                <h2 class="section-title">Approved Items</h2>
+                <p class="section-subtitle" id="approvedCount">—</p>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+                    <div class="search-bar" style="margin:0;flex:1;min-width:200px;">
+                        <i class="fa fa-search" style="color:var(--text-muted)"></i>
+                        <input type="text" id="approvedSearch" placeholder="Search…" oninput="renderApproved()" />
+                    </div>
+                    <select class="form-control" id="approvedType" onchange="renderApproved()"
+                        style="width:auto;border-radius:50px;padding:8px 14px;">
+                        <option value="">All Types</option>
+                        <option value="lost">Lost</option>
+                        <option value="found">Found</option>
+                    </select>
+                </div>
+                <div id="approvedList"></div>
+            </div>
+
+            <!-- ── USERS ── -->
+            <div class="tab-content" id="tab-users">
+                <h2 class="section-title">All Users</h2>
+                <p class="section-subtitle" id="usersCount">—</p>
+                <div id="usersList"></div>
+            </div>
+
+            <!-- ── STATS ── -->
+            <div class="tab-content" id="tab-stats">
+                <h2 class="section-title">Platform Statistics</h2>
+                <p class="section-subtitle">Overview of all activity on the platform</p>
+                <div class="stats-grid" style="margin-bottom:32px;" id="statsGrid"></div>
+
+                <h3 style="font-size:1rem;font-weight:700;margin-bottom:14px;">Category Breakdown</h3>
+                <div id="catBreakdown" style="display:grid;gap:8px;max-width:560px;"></div>
+
+                <h3 style="font-size:1rem;font-weight:700;margin-bottom:14px;margin-top:28px;">Recent Admin Actions</h3>
+                <div id="logList" style="display:grid;gap:8px;"></div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        let sess;
+        // Simple admin action log in localStorage
+        const LOG_KEY = 'laf_admin_log';
+        function getLogs() { return JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); }
+        function addLog(action) {
+            const logs = getLogs();
+            logs.unshift({ admin: sess.full_name, action, time: new Date().toISOString() });
+            if (logs.length > 50) logs.pop();
+            localStorage.setItem(LOG_KEY, JSON.stringify(logs));
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            sess = requireLogin('admin');
+            if (!sess) return;
+            document.getElementById('navAdminName').textContent = sess.full_name;
+            document.getElementById('adminNameSide').textContent = sess.email;
+            loadAll();
+        });
+
+        function loadAll() {
+            renderPending();
+            renderApproved();
+            renderUsers();
+            renderStats();
+        }
+
+        // ── PENDING ──
+        function renderPending() {
+            const items = getPendingItems();
+            document.getElementById('pendingBadge').textContent = items.length;
+            document.getElementById('pendingCount').textContent = items.length + ' item' + (items.length !== 1 ? 's' : '') + ' awaiting review';
+
+            const list = document.getElementById('pendingList');
+            if (!items.length) {
+                list.innerHTML = `<div class="empty-state"><div class="empty-icon">🎉</div><h3>All caught up!</h3><p>No items pending review</p></div>`;
+                return;
+            }
+            list.innerHTML = items.map(item => `
+      <div class="pcard" id="pc-${item.id}">
+        <div class="pcard-top">
+          <div>
+            <div class="pcard-title">${escHtml(item.title)}</div>
+            <div class="pcard-meta">
+              ${renderBadge(item.type)}
+              <span>📍 ${escHtml(item.location)}</span>
+              <span>🗂 ${escHtml(item.category || 'General')}</span>
+              <span>👤 ${escHtml(item.poster_name || '—')}</span>
+              <span>🕐 ${timeAgo(item.created_at)}</span>
+            </div>
+          </div>
+          ${item.image_url ? `<img src="${item.image_url}" style="width:72px;height:72px;object-fit:cover;border-radius:10px;flex-shrink:0;"/>` : `<div style="width:72px;height:72px;background:var(--glass);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:2rem;">${item.type === 'lost' ? '🔍' : '📦'}</div>`}
+        </div>
+        <p class="pcard-desc">${escHtml(item.description)}</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.82rem;">
+          <div style="padding:8px 12px;background:var(--glass);border-radius:8px;"><b>📅 Date:</b> ${formatDate(item.date_reported)}</div>
+
+        </div>
+        <div class="pcard-actions">
+          <button class="btn btn-success" onclick="moderate(${item.id},'approved')"><i class="fa fa-check"></i> Approve</button>
+          <button class="btn btn-danger"  onclick="moderate(${item.id},'rejected')"><i class="fa fa-times"></i> Reject</button>
+          <button class="btn btn-warning btn-sm" onclick="moderate(${item.id},'resolved')"><i class="fa fa-check-double"></i> Resolve</button>
+        </div>
+      </div>`).join('');
+        }
+
+        function moderate(id, status) {
+            const labels = { approved: 'Approved ✅', rejected: 'Rejected ❌', resolved: 'Resolved 💜' };
+            const types = { approved: 'success', rejected: 'error', resolved: 'info' };
+            updateItemStatus(id, status);
+            addLog(`Item #${id} → ${labels[status]}`);
+            showToast(`Item ${labels[status]}`, types[status]);
+            // Animate removal
+            const el = document.getElementById('pc-' + id);
+            if (el) { el.style.opacity = '0'; el.style.transform = 'translateX(30px)'; setTimeout(() => el.remove(), 300); }
+            setTimeout(() => { renderPending(); renderApproved(); renderStats(); }, 350);
+        }
+
+        // ── APPROVED ──
+        function renderApproved() {
+            const q = (document.getElementById('approvedSearch') || {}).value?.toLowerCase() || '';
+            const typ = (document.getElementById('approvedType') || {}).value || '';
+            let items = getItems().filter(i => i.status === 'approved');
+            if (typ) items = items.filter(i => i.type === typ);
+            if (q) items = items.filter(i => i.title.toLowerCase().includes(q) || i.location.toLowerCase().includes(q));
+            items.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            document.getElementById('approvedCount').textContent = items.length + ' approved item' + (items.length !== 1 ? 's' : '');
+            const list = document.getElementById('approvedList');
+            if (!items.length) { list.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><h3>No approved items</h3></div>`; return; }
+            list.innerHTML = items.map(item => `
+      <div class="a-item" id="ai-${item.id}">
+        <div>
+          <div class="a-title">${escHtml(item.title)} ${renderBadge(item.type)}</div>
+          <div class="a-meta">📍 ${escHtml(item.location)} &nbsp;·&nbsp; 👤 ${escHtml(item.poster_name || '—')} &nbsp;·&nbsp; 🕐 ${timeAgo(item.created_at)}</div>
+        </div>
+        <div class="a-actions">
+          <button class="btn btn-warning btn-sm" onclick="adminResolve(${item.id})" title="Mark Resolved"><i class="fa fa-check-double"></i></button>
+          <button class="btn btn-danger btn-sm"  onclick="adminDelete(${item.id})"  title="Delete"><i class="fa fa-trash"></i></button>
+        </div>
+      </div>`).join('');
+        }
+
+        function adminResolve(id) {
+            updateItemStatus(id, 'resolved');
+            addLog(`Item #${id} marked Resolved`);
+            showToast('Marked as resolved', 'success');
+            renderApproved(); renderStats();
+        }
+        function adminDelete(id) {
+            if (!confirm('Permanently delete this item?')) return;
+            deleteItemById(id, 0, 'admin');
+            addLog(`Item #${id} deleted`);
+            showToast('Item deleted', 'info');
+            renderApproved(); renderPending(); renderStats();
+        }
+
+        // ── USERS ──
+        function renderUsers() {
+            const users = getUsers();
+            document.getElementById('usersCount').textContent = users.length + ' registered user' + (users.length !== 1 ? 's' : '');
+            const list = document.getElementById('usersList');
+            list.innerHTML = users.map(u => {
+                const myCount = getItems().filter(i => i.user_id === u.id).length;
+                return `<div class="user-row">
+        <div class="u-av">${u.full_name[0].toUpperCase()}</div>
+        <div class="u-info">
+          <div class="u-name">${escHtml(u.full_name)} ${u.role === 'admin' ? '<span class="badge badge-approved" style="font-size:.68rem;">Admin</span>' : ''}</div>
+          <div class="u-mail">${escHtml(u.email)}</div>
+        </div>
+        <div style="text-align:right;font-size:.82rem;color:var(--text-muted);">
+          <div style="font-weight:700;color:var(--text-primary);">${myCount}</div>posts
+        </div>
+        <div style="font-size:.78rem;color:var(--text-muted);">Joined ${formatDate(u.created_at)}</div>
+      </div>`;
+            }).join('');
+        }
+
+        // ── STATS ──
+        function renderStats() {
+            const items = getItems();
+            const users = getUsers();
+            const approved = items.filter(i => i.status === 'approved');
+            const pending = items.filter(i => i.status === 'pending');
+            const rejected = items.filter(i => i.status === 'rejected');
+            const resolved = items.filter(i => i.status === 'resolved');
+            document.getElementById('statsGrid').innerHTML = [
+                { n: items.length, l: 'Total Items', ico: '📦' },
+                { n: approved.length, l: 'Approved', ico: '✅' },
+                { n: pending.length, l: 'Pending Review', ico: '🟡' },
+                { n: resolved.length, l: 'Reunited', ico: '🎉' },
+                { n: rejected.length, l: 'Rejected', ico: '❌' },
+                { n: users.length, l: 'Registered Users', ico: '👥' },
+            ].map(s => `<div class="stat-card"><div class="stat-number">${s.ico} ${s.n}</div><div class="stat-label">${s.l}</div></div>`).join('');
+
+            // Category breakdown
+            const cats = {};
+            approved.forEach(i => { cats[i.category || 'Other'] = (cats[i.category || 'Other'] || 0) + 1; });
+            const total = approved.length || 1;
+            document.getElementById('catBreakdown').innerHTML = Object.entries(cats).sort((a, b) => b[1] - a[1]).map(([cat, count]) => `
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:4px;">
+          <span>${cat}</span><span style="color:var(--text-muted);">${count} item${count !== 1 ? 's' : ''}</span>
+        </div>
+        <div style="height:6px;background:var(--glass-border);border-radius:3px;overflow:hidden;">
+          <div style="height:100%;width:${Math.round(count / total * 100)}%;background:linear-gradient(to right,var(--primary),var(--secondary));border-radius:3px;transition:width .6s;"></div>
+        </div>
+      </div>`).join('');
+
+            // Logs
+            const logs = getLogs().slice(0, 10);
+            document.getElementById('logList').innerHTML = logs.length
+                ? logs.map(l => `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--glass);border-radius:10px;font-size:.85rem;">
+          <i class="fa fa-shield-alt" style="color:var(--primary-light);"></i>
+          <div style="flex:1;">${escHtml(l.action)}</div>
+          <div style="color:var(--text-muted);font-size:.78rem;">${timeAgo(l.time)}</div>
+        </div>`).join('')
+                : `<div class="empty-state"><div class="empty-icon">📋</div><h3>No actions yet</h3></div>`;
+        }
+
+        function showTab(name, btn) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.s-link').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            btn.classList.add('active');
+            if (name === 'approved') renderApproved();
+            if (name === 'users') renderUsers();
+            if (name === 'stats') renderStats();
+        }
+    </script>
+</body>
+
+</html>
