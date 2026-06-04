@@ -1,0 +1,13 @@
+# OS Files
+.DS_Store
+Thumbs.db
+*.local
+
+# Database Exports
+*.sql.bak
+*.sql.zip
+*.sql.gz
+
+# Uploads directory (optional: ignore actual uploaded assets but keep directory)
+# uploads/*
+# !uploads/.gitkeep
