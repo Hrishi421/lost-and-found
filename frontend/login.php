@@ -1,6 +1,6 @@
 <?php
 // login.php
-require 'config.php';
+require '../backend/config.php';
 
 // ==========================================
 // 1. CONFIGURE YOUR CLIENT ID & SECRET
@@ -21,8 +21,11 @@ $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVE
 $host = $_SERVER['HTTP_HOST'];
 $uri = $_SERVER['REQUEST_URI'];
 $dir = dirname($uri);
-$dir = ($dir === '\\' || $dir === '/') ? '' : $dir;
-$google_login_uri = $protocol . $host . $dir . '/google-login.php';
+$dir = str_replace('\\', '/', $dir);
+$parent_dir = dirname($dir);
+$parent_dir = str_replace('\\', '/', $parent_dir);
+$parent_dir = ($parent_dir === '/' || $parent_dir === '.') ? '' : $parent_dir;
+$google_login_uri = $protocol . $host . $parent_dir . '/backend/google-login.php';
 
 if (isset($_SESSION['user_id'])) {
     if ($_SESSION['role'] === 'admin') {
@@ -245,7 +248,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Create form programmatically
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = 'google-login.php';
+            form.action = '../backend/google-login.php';
             
             const credentialInput = document.createElement('input');
             credentialInput.type = 'hidden';

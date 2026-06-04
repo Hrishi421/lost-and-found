@@ -1,27 +1,20 @@
 <?php
-// admin_users.php
-require 'config.php';
+// admin_pending.php
+require '../backend/config.php';
 requireAdmin();
 
-// Fetch Users
-$stmt = $pdo->query("
-    SELECT u.id, u.name, u.email, u.role, u.created_at, COUNT(i.id) as post_count 
-    FROM users u 
-    LEFT JOIN items i ON u.id = i.user_id 
-    WHERE u.role = 'student' 
-    GROUP BY u.id 
-    ORDER BY u.created_at DESC
-");
-$users = $stmt->fetchAll();
+// Fetch Pending Items
+$stmt = $pdo->query("SELECT i.*, u.name as user_name FROM items i JOIN users u ON i.user_id = u.id WHERE i.status = 'pending' ORDER BY i.created_at ASC");
+$pending_items = $stmt->fetchAll();
 
-$active_page = 'users';
+$active_page = 'pending';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Management - Admin Dashboard</title>
+    <title>Pending Review - Admin Dashboard</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .admin-nav {
@@ -41,33 +34,37 @@ $active_page = 'users';
         <?php include 'admin_header.php'; ?>
 
         <div class="dash-content">
-            <!-- USERS TAB -->
-            <div id="users" class="tab-pane active">
-                <h2 class="dash-title">User Management</h2>
+            <!-- PENDING REVIEW TAB -->
+            <div id="pending" class="tab-pane active">
+                <h2 class="dash-title">Pending Review</h2>
                 
                 <div class="table-container">
                     <table>
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Join Date</th>
-                                <th>Posts</th>
+                                <th>Item Details</th>
+                                <th>Type</th>
+                                <th>Reported By</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if(empty($users)): ?>
-                            <tr class="no-results"><td colspan="5" style="text-align:center;">No students registered yet.</td></tr>
+                            <?php if(empty($pending_items)): ?>
+                            <tr class="no-results"><td colspan="4" style="text-align:center;">No items pending review.</td></tr>
                             <?php else: ?>
-                                <?php foreach($users as $u): ?>
+                                <?php foreach($pending_items as $item): ?>
                                 <tr>
-                                    <td><strong><?= htmlspecialchars($u['name']) ?></strong></td>
-                                    <td><?= htmlspecialchars($u['email']) ?></td>
-                                    <td><?= date('M d, Y', strtotime($u['created_at'])) ?></td>
-                                    <td><?= $u['post_count'] ?></td>
                                     <td>
-                                        <button class="btn btn-danger" onclick="adminUserAction('admin_delete_user', <?= $u['id'] ?>, 'Delete this user AND all their posts?')">Delete User</button>
+                                        <strong><?= htmlspecialchars($item['title']) ?></strong>
+                                    </td>
+                                    <td><span class="badge badge-<?= $item['type'] ?>"><?= ucfirst($item['type']) ?></span></td>
+                                    <td><?= htmlspecialchars($item['user_name']) ?></td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button onclick="adminAction('admin_approve_item', <?= $item['id'] ?>)" class="btn btn-outline" style="color:var(--success); border-color:var(--success); font-size:0.8rem; padding:0.3rem 0.6rem;">Approve</button>
+                                            <button onclick="adminAction('admin_reject_item', <?= $item['id'] ?>)" class="btn btn-outline" style="color:var(--warning); border-color:var(--warning); font-size:0.8rem; padding:0.3rem 0.6rem;">Reject</button>
+                                            <button class="btn btn-danger" onclick="adminAction('admin_delete_item', <?= $item['id'] ?>, 'Delete this item permanently?')">Delete</button>
+                                        </div>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
@@ -102,11 +99,11 @@ $active_page = 'users';
                         const tbody = document.querySelector('tbody');
                         const tr = document.createElement('tr');
                         tr.className = 'no-results';
-                        tr.innerHTML = `<td colspan="5" style="text-align:center; color: var(--text-muted);">No matching users found.</td>`;
+                        tr.innerHTML = `<td colspan="4" style="text-align:center; color: var(--text-muted);">No matching items found.</td>`;
                         tbody.appendChild(tr);
                     } else {
                         noResRow.style.display = '';
-                        noResRow.querySelector('td').textContent = "No matching users found.";
+                        noResRow.querySelector('td').textContent = "No matching items found.";
                     }
                 } else if (noResRow) {
                     noResRow.style.display = 'none';
@@ -114,13 +111,13 @@ $active_page = 'users';
             }
         }
 
-        function adminUserAction(actionName, userId, confirmMsg = null) {
+        function adminAction(actionName, itemId, confirmMsg = null) {
             if(confirmMsg && !confirm(confirmMsg)) return;
             
-            fetch('ajax_handlers.php', {
+            fetch('../backend/ajax_handlers.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: `action=${actionName}&user_id=${userId}`
+                body: `action=${actionName}&item_id=${itemId}`
             })
             .then(res => res.json())
             .then(data => {

@@ -1,6 +1,6 @@
 <?php
 // reset-password.php
-require 'config.php';
+require '../backend/config.php';
 
 $error = '';
 $success = false;

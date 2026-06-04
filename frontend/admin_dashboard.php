@@ -1,6 +1,6 @@
 <?php
 // admin_dashboard.php
-require 'config.php';
+require '../backend/config.php';
 requireAdmin();
 
 // Fetch overall stats

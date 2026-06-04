@@ -1,20 +1,20 @@
 <?php
-// admin_pending.php
-require 'config.php';
+// admin_approved.php
+require '../backend/config.php';
 requireAdmin();
 
-// Fetch Pending Items
-$stmt = $pdo->query("SELECT i.*, u.name as user_name FROM items i JOIN users u ON i.user_id = u.id WHERE i.status = 'pending' ORDER BY i.created_at ASC");
-$pending_items = $stmt->fetchAll();
+// Fetch Approved Items
+$stmt = $pdo->query("SELECT i.*, u.name as user_name FROM items i JOIN users u ON i.user_id = u.id WHERE i.status = 'approved' ORDER BY i.created_at DESC");
+$approved_items = $stmt->fetchAll();
 
-$active_page = 'pending';
+$active_page = 'approved';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pending Review - Admin Dashboard</title>
+    <title>Approved Items - Admin Dashboard</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .admin-nav {
@@ -34,9 +34,9 @@ $active_page = 'pending';
         <?php include 'admin_header.php'; ?>
 
         <div class="dash-content">
-            <!-- PENDING REVIEW TAB -->
-            <div id="pending" class="tab-pane active">
-                <h2 class="dash-title">Pending Review</h2>
+            <!-- APPROVED ITEMS TAB -->
+            <div id="approved" class="tab-pane active">
+                <h2 class="dash-title">Approved Items</h2>
                 
                 <div class="table-container">
                     <table>
@@ -49,10 +49,10 @@ $active_page = 'pending';
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if(empty($pending_items)): ?>
-                            <tr class="no-results"><td colspan="4" style="text-align:center;">No items pending review.</td></tr>
+                            <?php if(empty($approved_items)): ?>
+                            <tr class="no-results"><td colspan="4" style="text-align:center;">No approved items.</td></tr>
                             <?php else: ?>
-                                <?php foreach($pending_items as $item): ?>
+                                <?php foreach($approved_items as $item): ?>
                                 <tr>
                                     <td>
                                         <strong><?= htmlspecialchars($item['title']) ?></strong>
@@ -61,8 +61,7 @@ $active_page = 'pending';
                                     <td><?= htmlspecialchars($item['user_name']) ?></td>
                                     <td>
                                         <div class="action-buttons">
-                                            <button onclick="adminAction('admin_approve_item', <?= $item['id'] ?>)" class="btn btn-outline" style="color:var(--success); border-color:var(--success); font-size:0.8rem; padding:0.3rem 0.6rem;">Approve</button>
-                                            <button onclick="adminAction('admin_reject_item', <?= $item['id'] ?>)" class="btn btn-outline" style="color:var(--warning); border-color:var(--warning); font-size:0.8rem; padding:0.3rem 0.6rem;">Reject</button>
+                                            <button class="btn btn-success" onclick="adminAction('admin_resolve_item', <?= $item['id'] ?>, 'Force resolve this item?')">Resolve</button>
                                             <button class="btn btn-danger" onclick="adminAction('admin_delete_item', <?= $item['id'] ?>, 'Delete this item permanently?')">Delete</button>
                                         </div>
                                     </td>
@@ -114,7 +113,7 @@ $active_page = 'pending';
         function adminAction(actionName, itemId, confirmMsg = null) {
             if(confirmMsg && !confirm(confirmMsg)) return;
             
-            fetch('ajax_handlers.php', {
+            fetch('../backend/ajax_handlers.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                 body: `action=${actionName}&item_id=${itemId}`

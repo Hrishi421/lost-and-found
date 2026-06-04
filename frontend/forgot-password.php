@@ -1,6 +1,6 @@
 <?php
 // forgot-password.php
-require 'config.php';
+require '../backend/config.php';
 
 // Self-healing database migration for password reset token columns
 try {

@@ -1,6 +1,6 @@
 <?php
 // index.php
-require 'config.php';
+require '../backend/config.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }

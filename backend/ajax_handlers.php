@@ -100,8 +100,11 @@ try {
                 $stmt = $pdo->prepare("SELECT image_path FROM items WHERE id = ? AND user_id = ?");
                 $stmt->execute([$item_id, $_SESSION['user_id']]);
                 $item = $stmt->fetch();
-                if ($item && $item['image_path'] && file_exists($item['image_path'])) {
-                    unlink($item['image_path']);
+                if ($item && $item['image_path']) {
+                    $full_path = '../frontend/' . $item['image_path'];
+                    if (file_exists($full_path)) {
+                        unlink($full_path);
+                    }
                 }
                 
                 $delStmt = $pdo->prepare("DELETE FROM items WHERE id = ? AND user_id = ?");
@@ -201,9 +204,12 @@ try {
                 $stmt = $pdo->prepare("SELECT image_path FROM items WHERE id = ?");
                 $stmt->execute([$item_id]);
                 $item = $stmt->fetch();
-                if ($item && $item['image_path'] && file_exists($item['image_path'])) {
-                    unlink($item['image_path']);
-                }
+                 if ($item && $item['image_path']) {
+                     $full_path = '../frontend/' . $item['image_path'];
+                     if (file_exists($full_path)) {
+                         unlink($full_path);
+                     }
+                 }
                 
                 $delStmt = $pdo->prepare("DELETE FROM items WHERE id = ?");
                 if ($delStmt->execute([$item_id])) {
@@ -221,11 +227,14 @@ try {
                 $stmt = $pdo->prepare("SELECT image_path FROM items WHERE user_id = ?");
                 $stmt->execute([$user_id]);
                 $items = $stmt->fetchAll();
-                foreach($items as $i) {
-                     if ($i['image_path'] && file_exists($i['image_path'])) {
-                        unlink($i['image_path']);
-                     }
-                }
+                 foreach($items as $i) {
+                      if ($i['image_path']) {
+                          $full_path = '../frontend/' . $i['image_path'];
+                          if (file_exists($full_path)) {
+                              unlink($full_path);
+                          }
+                      }
+                 }
                 
                 $delStmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
                 if ($delStmt->execute([$user_id])) {

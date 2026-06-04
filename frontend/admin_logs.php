@@ -1,6 +1,6 @@
 <?php
 // admin_logs.php
-require 'config.php';
+require '../backend/config.php';
 requireAdmin();
 
 // Fetch Audit Logs

@@ -124,9 +124,9 @@ try {
         // Log action if they are an admin
         if ($user['role'] === 'admin') {
             logAdminAction($pdo, "Logged in via Google Sign-In", $user['name']);
-            header("Location: admin_dashboard.php");
+            header("Location: ../frontend/admin_dashboard.php");
         } else {
-            header("Location: dashboard.php");
+            header("Location: ../frontend/dashboard.php");
         }
         exit;
     } else {
@@ -148,7 +148,7 @@ try {
             $_SESSION['login_method'] = 'google';
             
             // Redirect straight to dashboard - seamless experience
-            header("Location: dashboard.php");
+            header("Location: ../frontend/dashboard.php");
             exit;
         } else {
             die("Registration failed: Database reject.");

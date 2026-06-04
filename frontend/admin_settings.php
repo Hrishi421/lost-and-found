@@ -1,6 +1,6 @@
 <?php
 // admin_settings.php
-require 'config.php';
+require '../backend/config.php';
 requireAdmin();
 
 $active_page = 'settings';

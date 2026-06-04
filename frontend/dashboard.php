@@ -1,6 +1,6 @@
 <?php
 // dashboard.php
-require 'config.php';
+require '../backend/config.php';
 requireLogin();
 
 if ($_SESSION['role'] === 'admin') {
@@ -573,7 +573,7 @@ $item_id_param = $_GET['item_id'] ?? null;
         // Post Management AJAX
         function resolveItem(itemId) {
             if(confirm('Are you sure you want to mark this item as resolved?')) {
-                fetch('ajax_handlers.php', {
+                fetch('../backend/ajax_handlers.php', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: `action=resolve_item&item_id=${itemId}`
@@ -588,7 +588,7 @@ $item_id_param = $_GET['item_id'] ?? null;
 
         function deleteItem(itemId) {
             if(confirm('Are you sure you want to delete this item permanently?')) {
-                fetch('ajax_handlers.php', {
+                fetch('../backend/ajax_handlers.php', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: `action=delete_item&item_id=${itemId}`
@@ -609,7 +609,7 @@ $item_id_param = $_GET['item_id'] ?? null;
         let loggedInUserId = <?= $_SESSION['user_id'] ?>;
 
         function loadThreads() {
-            fetch('ajax_handlers.php', {
+            fetch('../backend/ajax_handlers.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                 body: `action=fetch_threads`
@@ -674,7 +674,7 @@ $item_id_param = $_GET['item_id'] ?? null;
 
         function fetchMessages() {
             if(!currentContactId || !currentItemId) return;
-            fetch('ajax_handlers.php', {
+            fetch('../backend/ajax_handlers.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                 body: `action=fetch_messages&contact_id=${currentContactId}&item_id=${currentItemId}&last_id=${lastMessageId}`
@@ -709,7 +709,7 @@ $item_id_param = $_GET['item_id'] ?? null;
             
             input.value = '';
             
-            fetch('ajax_handlers.php', {
+            fetch('../backend/ajax_handlers.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                 body: `action=send_message&receiver_id=${currentContactId}&item_id=${currentItemId}&message=${encodeURIComponent(msg)}`
@@ -743,7 +743,7 @@ $item_id_param = $_GET['item_id'] ?? null;
         }
 
         function markNotificationsAsRead() {
-            fetch('ajax_handlers.php', {
+            fetch('../backend/ajax_handlers.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                 body: 'action=mark_notifications_read'
@@ -761,7 +761,7 @@ $item_id_param = $_GET['item_id'] ?? null;
 
         function deleteNotification(notifId, btn) {
             if (confirm('Delete this notification?')) {
-                fetch('ajax_handlers.php', {
+                fetch('../backend/ajax_handlers.php', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: `action=delete_notification&notification_id=${notifId}`
